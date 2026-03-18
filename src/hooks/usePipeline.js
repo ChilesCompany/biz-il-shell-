@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export function usePipeline() {
-  const [deals, setDeals]     = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [deals, setDeals]       = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState(null)
   const [lastSync, setLastSync] = useState(null)
 
   async function fetchDeals() {
@@ -13,27 +13,15 @@ export function usePipeline() {
     try {
       const { data, error } = await supabase
         .from('deals')
-        .select(`
-          id,
-          hubspot_id,
-          name,
-          amount,
-          stage,
-          pipeline,
-          probability,
-          close_date,
-          owner_id,
-          created_at,
-          updated_at
-        `)
-        .not('stage', 'in', '("Closed Won","Closed Lost")')
+        .select('id, dealname, amount, dealstage, close_date, updated_at, is_closed_won, is_closed_lost')
+        .eq('is_closed_won', false)
+        .eq('is_closed_lost', false)
         .order('amount', { ascending: false })
 
       if (error) throw error
-      setDeals(data ?? [])
+      setDeals((data ?? []).map(d => ({ ...d, name: d.dealname, stage: d.dealstage })))
       setLastSync(new Date())
     } catch (err) {
-      console.error('[usePipeline]', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -41,6 +29,5 @@ export function usePipeline() {
   }
 
   useEffect(() => { fetchDeals() }, [])
-
   return { deals, loading, error, lastSync, refetch: fetchDeals }
 }

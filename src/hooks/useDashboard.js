@@ -11,12 +11,12 @@ export function useDashboard() {
     setLoading(true)
     setError(null)
     try {
-      // Run all queries in parallel
       const [dealsRes, agentsRes] = await Promise.all([
         supabase
           .from('deals')
-          .select('id, name, amount, stage, updated_at, close_date')
-          .not('stage', 'in', '("Closed Won","Closed Lost")')
+          .select('id, dealname, amount, dealstage, updated_at, close_date, is_closed_won, is_closed_lost')
+          .eq('is_closed_won', false)
+          .eq('is_closed_lost', false)
           .order('amount', { ascending: false }),
         supabase
           .from('agent_registry')
@@ -28,18 +28,17 @@ export function useDashboard() {
 
       const deals = (dealsRes.data ?? []).map(d => ({
         ...d,
-        age_days: d.updated_at
-          ? differenceInDays(new Date(), parseISO(d.updated_at))
-          : 0,
+        name:     d.dealname,
+        stage:    d.dealstage,
+        age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
       }))
 
       const totalPipeline = deals.reduce((s, d) => s + (Number(d.amount) || 0), 0)
-      const stalDeals     = deals.filter(d => d.age_days > 14)
+      const staleDeals    = deals.filter(d => d.age_days > 14)
       const agents        = agentsRes.data ?? []
 
-      setData({ deals, totalPipeline, staleDeals: stalDeals, agents })
+      setData({ deals, totalPipeline, staleDeals, agents })
     } catch (err) {
-      console.error('[useDashboard]', err)
       setError(err.message)
     } finally {
       setLoading(false)

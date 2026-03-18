@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { differenceInDays, parseISO } from 'date-fns'
 
-export function useDeals({ includeClosedWon = false, includeClosedLost = false } = {}) {
+export function useDeals() {
   const [deals, setDeals]     = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
@@ -11,33 +11,24 @@ export function useDeals({ includeClosedWon = false, includeClosedLost = false }
     setLoading(true)
     setError(null)
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('deals')
-        .select('*')
+        .select('id, dealname, amount, dealstage, close_date, updated_at, is_closed_won, is_closed_lost')
+        .eq('is_closed_won', false)
+        .eq('is_closed_lost', false)
         .order('amount', { ascending: false })
 
-      if (!includeClosedWon && !includeClosedLost) {
-        query = query.not('stage', 'in', '("Closed Won","Closed Lost")')
-      } else if (!includeClosedWon) {
-        query = query.neq('stage', 'Closed Won')
-      } else if (!includeClosedLost) {
-        query = query.neq('stage', 'Closed Lost')
-      }
-
-      const { data, error } = await query
       if (error) throw error
 
-      // Enrich with age in days
       const enriched = (data ?? []).map(d => ({
         ...d,
-        age_days: d.updated_at
-          ? differenceInDays(new Date(), parseISO(d.updated_at))
-          : 0,
+        name:     d.dealname,
+        stage:    d.dealstage,
+        age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
       }))
 
       setDeals(enriched)
     } catch (err) {
-      console.error('[useDeals]', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -45,6 +36,5 @@ export function useDeals({ includeClosedWon = false, includeClosedLost = false }
   }
 
   useEffect(() => { fetchDeals() }, [])
-
   return { deals, loading, error, refetch: fetchDeals }
 }
