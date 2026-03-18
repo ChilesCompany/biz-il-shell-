@@ -13,15 +13,15 @@ export function useDeals() {
     try {
       const { data, error } = await supabase
         .from('deals')
-        .select('id, dealname, amount, dealstage, close_date, updated_at')
-        .eq('is_closed_won', false)
-        .eq('is_closed_lost', false)
+        .select('id, deal_name, amount, priority, close_date, updated_at, is_closed_won, is_closed_lost')
+        .or('is_closed_won.is.null,is_closed_won.eq.false')
+        .or('is_closed_lost.is.null,is_closed_lost.eq.false')
         .order('amount', { ascending: false })
       if (error) throw error
       setDeals((data ?? []).map(d => ({
         ...d,
-        name:     d.dealname,
-        stage:    d.dealstage,
+        name:     d.deal_name,
+        stage:    d.priority ?? 'Unknown',
         age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
       })))
     } catch (err) {

@@ -14,9 +14,9 @@ export function useDashboard() {
       const [dealsRes, agentsRes] = await Promise.all([
         supabase
           .from('deals')
-          .select('id, deal_name, amount, priority, updated_at, close_date')
-          .eq('is_closed_won', false)
-          .eq('is_closed_lost', false)
+          .select('id, deal_name, amount, priority, updated_at, close_date, is_closed_won, is_closed_lost')
+          .or('is_closed_won.is.null,is_closed_won.eq.false')
+          .or('is_closed_lost.is.null,is_closed_lost.eq.false')
           .order('amount', { ascending: false }),
         supabase
           .from('agent_registry')
@@ -27,7 +27,7 @@ export function useDashboard() {
       const deals = (dealsRes.data ?? []).map(d => ({
         ...d,
         name:     d.deal_name,
-        stage:    d.priority,
+        stage:    d.priority ?? 'Unknown',
         age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
       }))
       const totalPipeline = deals.reduce((s, d) => s + (Number(d.amount) || 0), 0)
