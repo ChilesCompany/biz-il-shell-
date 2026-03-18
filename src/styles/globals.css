@@ -25,7 +25,8 @@
            transition-all duration-150 cursor-pointer;
   }
   .nav-item.active {
-    @apply text-orange bg-orange/8 font-semibold;
+    @apply text-orange font-semibold;
+    background-color: rgba(224, 92, 42, 0.08);
   }
 
   /* Page card */
