@@ -14,7 +14,7 @@ export function useDashboard() {
       const [dealsRes, agentsRes] = await Promise.all([
         supabase
           .from('deals')
-          .select('id, dealname, amount, dealstage, updated_at, close_date')
+          .select('id, deal_name, amount, priority, updated_at, close_date')
           .eq('is_closed_won', false)
           .eq('is_closed_lost', false)
           .order('amount', { ascending: false }),
@@ -26,8 +26,8 @@ export function useDashboard() {
       if (dealsRes.error) throw dealsRes.error
       const deals = (dealsRes.data ?? []).map(d => ({
         ...d,
-        name:     d.dealname,
-        stage:    d.dealstage,
+        name:     d.deal_name,
+        stage:    d.priority,
         age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
       }))
       const totalPipeline = deals.reduce((s, d) => s + (Number(d.amount) || 0), 0)
