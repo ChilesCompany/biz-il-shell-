@@ -13,11 +13,10 @@ export function usePipeline() {
     try {
       const { data, error } = await supabase
         .from('deals')
-        .select('id, dealname, amount, dealstage, close_date, updated_at, is_closed_won, is_closed_lost')
+        .select('id, dealname, amount, dealstage, close_date, updated_at')
         .eq('is_closed_won', false)
         .eq('is_closed_lost', false)
         .order('amount', { ascending: false })
-
       if (error) throw error
       setDeals((data ?? []).map(d => ({ ...d, name: d.dealname, stage: d.dealstage })))
       setLastSync(new Date())

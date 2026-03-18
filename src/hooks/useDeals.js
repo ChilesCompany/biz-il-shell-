@@ -13,21 +13,17 @@ export function useDeals() {
     try {
       const { data, error } = await supabase
         .from('deals')
-        .select('id, dealname, amount, dealstage, close_date, updated_at, is_closed_won, is_closed_lost')
+        .select('id, dealname, amount, dealstage, close_date, updated_at')
         .eq('is_closed_won', false)
         .eq('is_closed_lost', false)
         .order('amount', { ascending: false })
-
       if (error) throw error
-
-      const enriched = (data ?? []).map(d => ({
+      setDeals((data ?? []).map(d => ({
         ...d,
         name:     d.dealname,
         stage:    d.dealstage,
         age_days: d.updated_at ? differenceInDays(new Date(), parseISO(d.updated_at)) : 0,
-      }))
-
-      setDeals(enriched)
+      })))
     } catch (err) {
       setError(err.message)
     } finally {
