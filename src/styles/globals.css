@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-family: 'DM Sans', sans-serif; }
+  body {
+    @apply bg-surface-2 text-ink;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border-strong rounded-full; }
+}
+
+@layer components {
+  .font-display { font-family: 'Bebas Neue', sans-serif; }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+           text-ink-3 hover:text-ink hover:bg-surface-3
+           transition-all duration-150 cursor-pointer;
+  }
+  .nav-item.active {
+    @apply text-orange bg-orange/8 font-semibold;
+  }
+
+  /* Page card */
+  .card {
+    @apply bg-surface rounded-xl border border-border shadow-card p-5;
+  }
+
+  /* Stat badge */
+  .stat-pill {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* Status dots */
+  .dot-green  { @apply w-2 h-2 rounded-full bg-emerald-500; }
+  .dot-yellow { @apply w-2 h-2 rounded-full bg-amber-400; }
+  .dot-red    { @apply w-2 h-2 rounded-full bg-red-500; }
+  .dot-gray   { @apply w-2 h-2 rounded-full bg-ink-4; }
+}
