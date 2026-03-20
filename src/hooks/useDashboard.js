@@ -19,9 +19,10 @@ export function useDashboard() {
           .or('is_closed_lost.is.null,is_closed_lost.eq.false')
           .order('amount', { ascending: false }),
         supabase
-          .from('agent_registry')
-          .select('name, status, last_run, schedule, category')
-          .order('name'),
+          .from('dashboard_snapshots')
+          .select('payload')
+          .eq('widget', 'agents')
+          .single(),
       ])
       if (dealsRes.error) throw dealsRes.error
       const deals = (dealsRes.data ?? []).map(d => ({
@@ -32,7 +33,7 @@ export function useDashboard() {
       }))
       const totalPipeline = deals.reduce((s, d) => s + (Number(d.amount) || 0), 0)
       const staleDeals    = deals.filter(d => d.age_days > 14)
-      const agents        = agentsRes.data ?? []
+      const agents        = agentsRes.data?.payload ?? []
       setData({ deals, totalPipeline, staleDeals, agents })
     } catch (err) {
       setError(err.message)
